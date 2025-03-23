@@ -6,8 +6,9 @@
 
 class TonysFFT {
 public:
-	std::vector<std::vector<int>> CreateFourierArray();
-	std::vector<std::vector<CmplxNum>> ReturnFourierArray(int N)
+	void SaveFourierArrayToFile(const std::vector<std::vector<CmplxNum>> matrixArray);
+	std::vector<std::vector<CmplxNum>> CreateFourierArray(int N);
+	void CreateDefaultFR();
 };
 
 #endif // TONYSFFT_H

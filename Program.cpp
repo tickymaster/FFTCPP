@@ -1,11 +1,12 @@
 #include "iostream"
 #include "CmplxNum.h"
-#include "TonysFFT.cpp"
-//Test-file, may be ignored to implement the CmplxNum class in a different project.
-
-#include <iostream>
-
+#include "TonysFFT.h"
 int main() {
-    std::cout << "__cplusplus: " << __cplusplus << std::endl;
+    using namespace std;
+    TonysFFT fft;
+    cout << "TonysFFT defined as fft, calling the CreateDefaultFR";
+    std::vector<std::vector<CmplxNum>> fourier_array = fft.CreateFourierArray(2000);
+    cout << "Saving to file: ";
+    fft.SaveFourierArrayToFile(fourier_array);
     return 0;
 }
