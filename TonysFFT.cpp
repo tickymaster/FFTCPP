@@ -51,10 +51,10 @@ std::vector<std::vector<CmplxNum>> TonysFFT::CreateFourierArray(int N) {
 			{
 			Complex_Number.setArgument(TWO_PI_OVER_N * n * k);
 			matrixArray[k][n] = Complex_Number;
-			}
 		}
-		return matrixArray;
 	}
+	return matrixArray;
+}
 void TonysFFT::CreateDefaultFR() {
 	//creates a default fourier array with dimenssions 55k x 55k
 	SaveFourierArrayToFile(CreateFourierArray(55000));
