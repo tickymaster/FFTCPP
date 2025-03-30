@@ -42,9 +42,7 @@ public:
 	static CmplxNum Parse(const std::string& str);
 
 	std::string ToString() const;
+
+	bool operator==(const CmplxNum& other) const;
 };
-
-
-
-
 #endif // CMPLXNUM_H

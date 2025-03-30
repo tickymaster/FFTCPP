@@ -80,19 +80,6 @@ CmplxNum CmplxNum::operator/(const CmplxNum& other) const {
     double imagQuotient = ((this->imag * other.real) - (this->real * other.imag)) / denominator;
     return CmplxNum(realQuotient, imagQuotient);
 }
-
-//CmplxNum& CmplxNum::operator=(const CmplxNum& other) {
-//    if (this == &other) {
-//        return *this;
-//    }
-//    this->real = other.real;
-//    this->imag = other.imag;
-//    this->modulus = other.modulus;
-//    this->argument - other.argument;
-//
-//    return *this;
-//}
-
 CmplxNum CmplxNum::Pow(const CmplxNum& a, int expo) {
     double raisedModulus = pow(a.modulus, expo);
     double multipliedArgument = a.argument * expo;
@@ -129,7 +116,10 @@ CmplxNum CmplxNum::Parse(const std::string& str) {
 
 std::string CmplxNum::ToString() const {
     std::ostringstream oss;
-    oss << "Cartesian Form: " << this->real << " + " << this->imag << "i"
-        << " | Polar Form: Modulus = " << this->modulus << ", Argument = " << this->argument;
+    oss << this->real << "+" << this->imag << "i";
     return oss.str();
+}
+
+bool CmplxNum::operator==(const CmplxNum& other) const {
+    return this->real == other.real && this->imag == other.imag;
 }
