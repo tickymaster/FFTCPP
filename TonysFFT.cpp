@@ -143,7 +143,7 @@ bool TonysFFT::VerifyFourierArray(std::vector <std::vector<CmplxNum>> inputArray
 void TonysFFT::CreateDefaultFR() {
 	//creates a default fourier array with dimenssions 48k x 48k
 	using namespace std;
-	int N = 48000;
+	int N = 512;
 	CmplxNum obj;
 	const int PI = 3;
 
