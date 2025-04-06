@@ -3,10 +3,13 @@
 
 #include <string>
 #include <cstdint>
+#include <vector>   
 
 class TonysWAV {
 public:
     void read_wav_file(std::string fname);
+
+    std::vector<int16_t> get_wav_raw_data(std::string fname);
 
     struct Twavheader {
         char chunk_ID[4];              //  4  riff_mark[4];
@@ -28,3 +31,4 @@ public:
 };
 
 #endif // TONYSWAV_H
+

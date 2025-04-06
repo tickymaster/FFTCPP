@@ -1,4 +1,7 @@
+//my libraries
 #include "TonysFFT.h"
+#include "TonysWAV.h"
+
 #include "fstream"
 #include "vector"
 #include "sstream"
@@ -7,199 +10,119 @@
 #include "CmplxNum.h"
 #include "iostream"
 #include "string"
+#include "algorithm"
+#include "span"
 
 //Ill try to create an fft algorithm using both integers and floating point numbers, for speed and precission respecfully.
 
-void TonysFFT::SaveFourierArrayToFile(std::vector<std::vector<CmplxNum>>& matrixArray) {
+std::vector<std::vector<CmplxNum>> TonysFFT::W;
+
+void TonysFFT::InitializeWArray(int N) {
 	using namespace std;
-
-	int rows = matrixArray.size();
-	int cols = matrixArray[0].size();
-
-	if (rows != cols) {
-		throw invalid_argument("The matrix array's dimensions are not equal.");
-	}
-
-	stringstream filename;
-	filename << "FArray(" << rows << "x" << cols << ").bin";
-	string name = filename.str();
-
-	ofstream file(name, ios::out | ios::binary);
-
-	if (!file.is_open()) {
-		cerr << "Error opening file for writing: " << name << endl;
-		return;
-	}
-
-	// Write the dimensions of the matrix
-	file.write(reinterpret_cast<const char*>(&rows), sizeof(rows));
-	file.write(reinterpret_cast<const char*>(&cols), sizeof(cols));
-
-	for (size_t i = 0; i < rows; i++) {
-		for (size_t j = 0; j < cols; j++) {
-			double real = matrixArray[i][j].getReal();
-			double imag = matrixArray[i][j].getImag();
-			file.write(reinterpret_cast<const char*>(&real), sizeof(real));
-			file.write(reinterpret_cast<const char*>(&imag), sizeof(imag));
-		}
-		// Clear the row from memory after writing it to the file
-		vector<CmplxNum>().swap(matrixArray[i]);
-	}
-
-	file.close();
-
-	cout << "File successfully saved to " + name << endl;
-}
-
-
-std::vector<std::vector<CmplxNum>> TonysFFT::LoadFourierArrayFromFile(std::string filename) {
-	using namespace std;
-	ifstream file(filename, ios::in | ios::binary);
-
-	if (!file.is_open()) {
-		cerr << "Error opening file for reading: " << filename << endl;
-		return {};
-	}
-
-	int rows, cols;
-	file.read(reinterpret_cast<char*>(&rows), sizeof(rows));
-	file.read(reinterpret_cast<char*>(&cols), sizeof(cols));
-
-	vector<vector<CmplxNum>> fourierArray(rows, vector<CmplxNum>(cols));
-
-	for (size_t i = 0; i < rows; i++) {
-		for (size_t j = 0; j < cols; j++) {
-			double real, imag;
-			file.read(reinterpret_cast<char*>(&real), sizeof(real));
-			file.read(reinterpret_cast<char*>(&imag), sizeof(imag));
-			fourierArray[i][j] = CmplxNum(real, imag);
-		}
-	}
-
-	file.close();
-
-	return fourierArray;
-}
-
-
-
-std::vector<std::vector<CmplxNum>> TonysFFT::CreateFourierArray(int N) {
-	using namespace std;
-	CmplxNum obj;
-	const int PI = 3;
-	vector<vector<CmplxNum>> matrixArray(N, vector<CmplxNum>(N));
-
+	const double PI = 3.14159265358979323846;
 	const double TWO_PI_OVER_N = 2.0 * PI / double(N);
 
-	CmplxNum W = CmplxNum(1, 0);
-	W.setArgument(TWO_PI_OVER_N);
+	W.resize(N, vector<CmplxNum>(N));
+	CmplxNum W_base = CmplxNum(1, 0);
+	W_base.setArgument(TWO_PI_OVER_N);
+
+	for (size_t n = 0; n < N; n++) {
+		for (size_t k = 0; k < N; k++) {
+			W[n][k] = CmplxNum::Pow(W_base, n * k);
+		}
+	}
+}
+
+void TonysFFT::DFT(const std::vector<int16_t>& signal)
+{
+	int N = signal.size();
+
+}
+
+std::vector<CmplxNum> TonysFFT::FFT(std::vector<int16_t>& raw_data) {
+	//radix-2 padding
+	int N = raw_data.size();
+	InitializeWArray(N);
+	size_t power_of_2 = 1;
+	while (power_of_2 < N) power_of_2 <<= 1;
+
+	if (power_of_2 != N) {
+		raw_data.resize(power_of_2, 0);
+		N = power_of_2;
+	}
+
+	CmplxNum num = CmplxNum(1, 0);
+	std::vector<CmplxNum> data(N);
 
 	for (size_t i = 0; i < N; i++)
 	{
-		matrixArray[0][i] = CmplxNum(1, 0);
-		matrixArray[i][0] = CmplxNum(1, 0);
+		num.setReal(raw_data[reverseBits(i)]);
+		data[i] = num;
 	}
 
-	W.setReal(1);
-	W.setImag(0);
-	W.setArgument(TWO_PI_OVER_N);
+	this->FFTRecursive(data, N);
 
-	for (size_t n = 1; n < N; n++)
-	{
-		for (size_t k = 1; k < N; k++)
-		{
-			matrixArray[n][k] = obj.Pow(W, n * k);
-		}
-	}
-
-	return matrixArray;
+	return data;
 }
 
-bool TonysFFT::VerifyFourierArray(std::vector <std::vector<CmplxNum>> inputArray) {
+void TonysFFT::FFTRecursive(std::vector<CmplxNum>& data, int size) {
 	using namespace std;
 
-	TonysFFT fft;
-	int size = inputArray.size();
-
-	vector<vector<CmplxNum>> correctArray = fft.LoadFourierArrayFromFile("CorrectFArray.csv");
-
-	for (size_t i = 0; i < size; i++)
+	//recursive end case
+	if (size <= 2)
 	{
-		for (size_t j = 0; j < size; j++)
-		{
-			if (!(inputArray[i][j] == correctArray[i][j]))
-			{
-				cerr << "The 2 arrays are not the same";
-				cout << i, j;
-				return false;
-			}
-			cout << i, j;
-		}
-	}
-	return true;
-
-}
-
-void TonysFFT::CreateDefaultFR() {
-	//creates a default fourier array with dimenssions 48k x 48k
-	using namespace std;
-	int N = 512;
-	CmplxNum obj;
-	const int PI = 3;
-
-	stringstream filename;
-	filename << "FArray(" << N << "x" << N << ").bin";
-	string name = filename.str();
-
-	ofstream file(name);
-
-	if (!file.is_open()) {
-		cerr << "Error opening file for writing: " << name << endl;
+		CmplxNum temp = data[0];
+		data[0] = data[0] + data[1];
+		data[1] = temp - data[1];
 		return;
 	}
+	//load the twiddle factors
 
-	// Write the dimensions of the matrix
-	file.write(reinterpret_cast<const char*>(&N), sizeof(N));
-	file.write(reinterpret_cast<const char*>(&N), sizeof(N));
+	//no need to create even and odd arrays since the bit have been reversed
+	//divide the array into 2 sub arrays
 
-	const double TWO_PI_OVER_N = 2.0 * PI / double(N);
+	vector<CmplxNum> First_half(size / 2); 
+	vector<CmplxNum> Second_half(size / 2);
 
-	CmplxNum W = CmplxNum(1, 0);
-	W.setArgument(TWO_PI_OVER_N);
+	copy(data.begin(), data.begin() + size / 2, First_half.begin());
 
-	for (size_t i = 0; i < N; i++) {
-		double real = 1.0;
-		double imag = 0.0;
-		file.write(reinterpret_cast<const char*>(&real), sizeof(real));
-		file.write(reinterpret_cast<const char*>(&imag), sizeof(imag));
+	copy(data.begin() + size / 2, data.end(), First_half.begin());
+
+	//call FFTRecursive for both odd and even arrays
+
+	FFTRecursive(First_half, size / 2);
+	FFTRecursive(Second_half, size / 2);
+
+
+	//when FFTRecursive returns perofrm the FFT math
+	//X(K) = Even(k) + W(k)*Odd(k)
+	//X(k+size/2) = Even(K) - W(k)*Odd(k)
+
+	for (size_t k = 0; k < size/2; k++)
+	{
+		CmplxNum t = data[k+size/2] * W[k][size/2];
+		data[k] = data[k] + t;
+		data[k + size / 2] = data[k] - t;
 	}
-
-	for (size_t i = 1; i < N; i++) {
-		double real = 1.0;
-		double imag = 0.0;
-		for (size_t j = 1; j < N; j++) {
-			CmplxNum value = CmplxNum::Pow(W, i * j);
-			double real = value.getReal();
-			double imag = value.getImag();
-			file.write(reinterpret_cast<const char*>(&real), sizeof(real));
-			file.write(reinterpret_cast<const char*>(&imag), sizeof(imag));
-		}
-	}
-
-	file.close();
-
-	cout << "File successfully saved to " + name << endl;
 }
 
-
-std::vector<CmplxNum> TonysFFT::FFT(std::vector<int>) {
-	std::vector<CmplxNum> outputArray;
-	return outputArray;
+std::vector<double> TonysFFT::GetMagnitudes(const std::vector<CmplxNum>& fftResult)
+{
+	std::vector<double> magnitudes;
+	CmplxNum num;
+	for (const auto& val : fftResult)
+	{
+		num = val;
+		magnitudes.push_back(num.getReal());
+	}
+	return magnitudes;
 }
 
-std::vector<CmplxNum> TonysFFT::DFT(std::vector<int>) {
-	using namespace std;
-	vector<CmplxNum> outputArray;
-	vector<vector<CmplxNum>> fourierArray = LoadFourierArrayFromFile("");
-	return outputArray;
+uint16_t TonysFFT::reverseBits(uint16_t n) {
+	uint16_t ans = 0;
+	for (int i = 31; i >= 0; i--) {
+		ans |= (n & 1) << i;
+		n >>= 1;
+	}
+	return ans;
 }

@@ -6,16 +6,16 @@
 
 class TonysFFT {
 public:
-	void SaveFourierArrayToFile(std::vector<std::vector<CmplxNum>>& matrixArray);
-	std::vector<std::vector<CmplxNum>> LoadFourierArrayFromFile(std::string filename);
-	std::vector<std::vector<CmplxNum>> CreateFourierArray(int N);
-	bool VerifyFourierArray(std::vector <std::vector<CmplxNum>> inputArray);
-	void CreateDefaultFR();
-	//fourier transforms
+	static void InitializeWArray(int N);
+	static std::vector<std::vector<CmplxNum>> W;
 
-	std::vector<CmplxNum> FFT(std::vector<int>);
+	//fast fourier transforms
+	std::vector<CmplxNum> FFT(std::vector<int16_t>& raw_data);
+	void DFT(const std::vector<int16_t>& signal);
+	std::vector<double> GetMagnitudes(const std::vector<CmplxNum>& fftResult);
 private:
-	std::vector<CmplxNum> DFT(std::vector<int>);
+	void FFTRecursive(std::vector<CmplxNum>& data, int size);
+	uint16_t reverseBits(uint16_t n);
 };
 
 #endif // TONYSFFT_H

@@ -38,7 +38,7 @@ void TonysWAV::read_wav_file(std::string fname)
         wavfile.close();  // Close audio file
 
         // Display some audio samples
-        const size_t numofsample = 20;
+        const size_t numofsample = 4000;
         std::cout << "Listing first " << numofsample << " Samples:" << std::endl;
         for (size_t i = 0; i < numofsample && i < audio_data.size(); ++i)
         {
@@ -46,5 +46,33 @@ void TonysWAV::read_wav_file(std::string fname)
         }
 
         std::cout << std::endl;
+    }
+}
+
+std::vector<int16_t> TonysWAV::get_wav_raw_data(std::string fname) {
+    std::ifstream wavfile(fname, std::ios::binary);
+
+    if (wavfile.is_open())
+    {
+        // Read the WAV header
+        Twavheader wav;
+        wavfile.read(reinterpret_cast<char*>(&wav), sizeof(Twavheader));
+
+        // If the file is a valid WAV file
+        if (std::string(wav.format, 4) != "WAVE" || std::string(wav.chunk_ID, 4) != "RIFF")
+        {
+            wavfile.close();
+            std::cerr << "Not a WAVE or RIFF!" << std::endl;
+            return {};
+        }
+
+        std::vector<int16_t> audio_data(wav.sub_chunk2_size / sizeof(int16_t));
+        wavfile.read(reinterpret_cast<char*>(audio_data.data()), wav.sub_chunk2_size);
+        wavfile.close();  // Close audio file
+        return audio_data;
+    }
+    else {
+        std::cerr << "Error opening file: " << fname << std::endl;
+        return {};
     }
 }
