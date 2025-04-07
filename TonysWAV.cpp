@@ -66,6 +66,17 @@ std::vector<int16_t> TonysWAV::get_wav_raw_data(std::string fname) {
             return {};
         }
 
+        std::cout << "FileName:" << fname << std::endl;
+        std::cout << "File size:" << wav.chunk_size + 8 << std::endl;
+        std::cout << "Resource Exchange File Mark:" << std::string(wav.chunk_ID, 4) << std::endl;
+        std::cout << "Format:" << std::string(wav.format, 4) << std::endl;
+        std::cout << "Channels: " << wav.num_channels << std::endl;
+        std::cout << "Sample Rate: " << wav.sample_rate << " Hz" << std::endl;
+        std::cout << "Bits Per Sample: " << wav.bits_per_sample << " bits" << std::endl;
+
+        std::cout << "SUB_CHUNK2_SIZE: " << wav.sub_chunk2_size << "\n";
+        std::cout << "SUB_CHUNK2_SIZE/INT16_T: " << wav.sub_chunk2_size / sizeof(int16_t) << '\n';
+
         std::vector<int16_t> audio_data(wav.sub_chunk2_size / sizeof(int16_t));
         wavfile.read(reinterpret_cast<char*>(audio_data.data()), wav.sub_chunk2_size);
         wavfile.close();  // Close audio file

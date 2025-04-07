@@ -24,12 +24,18 @@
     <ClCompile Include="TonysFFT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TonysWAV.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CmplxNum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TonysFFT.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TonysWAV.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
