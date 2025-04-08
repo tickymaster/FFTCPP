@@ -1,6 +1,6 @@
 //my libraries
 #include "TonysFFT.h"
-#include "TonysWAV.h"
+#include "WavFile.h"
 
 #include "fstream"
 #include "vector"
@@ -39,10 +39,17 @@ void TonysFFT::DFT(const std::vector<int16_t>& signal)
 
 }
 
+//MAKE SURE THE INPUT DATA IS OF OPERABLE SIZE WE DONT WANT TO CREATE A 
+//FOURIER ARRAY OF 170K X 170K ENTRIES/ SPLIT IT UP INTO MORE MANAGABLE CHUNKS
+//CAN BE OF 1024/512 ETC we will see
+
+//figure out how to disect the initial array into smaller arrays whilst keeping the resultant vector the same 
+//as when we dont split it
+
 std::vector<CmplxNum> TonysFFT::FFT(std::vector<int16_t>& raw_data) {
 	//radix-2 padding
 	int N = raw_data.size();
-	InitializeWArray(N);
+	InitializeWArray(N/2); //checked in debug, for large values of N the program slows down significantly
 	size_t power_of_2 = 1;
 	while (power_of_2 < N) power_of_2 <<= 1;
 

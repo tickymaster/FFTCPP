@@ -24,7 +24,10 @@
     <ClCompile Include="TonysFFT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TonysWAV.cpp">
+    <ClCompile Include="WavFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TonysSPGRAM.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,7 +38,10 @@
     <ClInclude Include="TonysFFT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TonysWAV.h">
+    <ClInclude Include="WavFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TonysSPGRAM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
